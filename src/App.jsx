@@ -34,6 +34,15 @@ const App = () => {
     setShowForm(false);
   };
 
+  // NEW: Function to toggle task completion and persist the change
+  const toggleTaskCompletion = (id) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
+  };
+
   const handleEditClick = (task) => {
     setEditTask(task);
     setShowForm(true);
@@ -93,6 +102,7 @@ const App = () => {
             task={task}
             onDelete={deleteTask}
             onEdit={handleEditClick}
+            onToggle={toggleTaskCompletion} // NEW: pass toggle handler
           />
         ))}
       </div>

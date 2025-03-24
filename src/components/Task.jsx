@@ -1,21 +1,20 @@
-import React, { useState } from "react";
+import React from "react";
 import { FaTrash, FaEdit, FaCheck } from "react-icons/fa";
 
-const Task = ({ task, onDelete, onEdit }) => {
-  const [completed, setCompleted] = useState(task.completed || false);
-
+const Task = ({ task, onDelete, onEdit, onToggle }) => {
+  // NEW: Call parent's onToggle function
   const toggleComplete = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    setCompleted(!completed);
+    e.stopPropagation();
+    onToggle(task.id);
   };
 
   const handleEdit = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     onEdit(task);
   };
 
   const handleDelete = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
+    e.stopPropagation();
     onDelete(task.id);
   };
 
@@ -28,7 +27,7 @@ const Task = ({ task, onDelete, onEdit }) => {
     <div
       onClick={toggleComplete}
       className={`p-3 bg-white rounded-lg shadow-sm flex justify-between items-start 
-      ${completed ? "opacity-70 bg-gray-50" : ""} 
+      ${task.completed ? "opacity-70 bg-gray-50" : ""} 
       group hover:shadow-md transition-all transform hover:-translate-y-0.5 mb-2 border border-gray-100`}
     >
       <div className="flex-1 flex items-start">
@@ -36,7 +35,7 @@ const Task = ({ task, onDelete, onEdit }) => {
           onClick={toggleComplete}
           className={`flex-shrink-0 cursor-pointer mt-1 w-5 h-5 rounded-full border flex items-center justify-center transition-colors
           ${
-            completed
+            task.completed
               ? "bg-green-500 border-green-500"
               : "border-gray-400 hover:border-green-400 group-hover:border-green-400"
           }`}
@@ -44,14 +43,16 @@ const Task = ({ task, onDelete, onEdit }) => {
           <FaCheck
             size={10}
             className={`text-white ${
-              completed ? "opacity-100" : "opacity-0 group-hover:opacity-50"
+              task.completed
+                ? "opacity-100"
+                : "opacity-0 group-hover:opacity-50"
             }`}
           />
         </button>
         <div className="ml-3 flex-1">
           <h3
             className={`font-medium leading-tight mb-0.5 ${
-              completed ? "line-through text-gray-500" : "text-gray-800"
+              task.completed ? "line-through text-gray-500" : "text-gray-800"
             }`}
           >
             {task.title}
