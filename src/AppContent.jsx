@@ -4,6 +4,8 @@ import { useCollection } from "react-firebase-hooks/firestore";
 import Task from "./components/Task";
 import TaskForm from "./components/TaskForm";
 import { firestore } from "./firebaseConfig";
+import ClipLoader from "react-spinners/ClipLoader"; // NEW: Added spinner import
+import { PulseLoader } from "react-spinners";
 
 const AppContent = ({ user }) => {
   const tasksRef = firestore.collection("tasks");
@@ -67,11 +69,10 @@ const AppContent = ({ user }) => {
     setInitialQuadrant(null);
   };
 
-  const getQuadrantTasks = (important, urgent) => {
-    return tasks.filter(
+  const getQuadrantTasks = (important, urgent) =>
+    tasks.filter(
       (task) => task.important === important && task.urgent === urgent
     );
-  };
 
   const EmptyQuadrant = ({ message, isImportant, isUrgent }) => (
     <div
@@ -132,126 +133,192 @@ const AppContent = ({ user }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 p-4 pb-20">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          Eisenhower Matrix
-        </h1>
-        <p className="text-center text-gray-600 mb-4 text-sm">
-          Organize tasks by importance and urgency{" "}
-          <span className="inline-flex items-center bg-gray-100 px-2 py-1 rounded ml-1 text-xs">
-            <FaKeyboard className="mr-1" size={12} />
-            Ctrl+N to add task
-          </span>
-        </p>
-        <div className="flex justify-center mt-3 space-x-2">
-          <button
-            className={`px-4 py-1.5 rounded-full shadow-sm ${
-              view === "matrix"
-                ? "bg-blue-500 text-white ring-2 ring-blue-300"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            } transition-all`}
-            onClick={() => setView("matrix")}
-          >
-            Matrix View
-          </button>
-          <button
-            className={`px-4 py-1.5 rounded-full shadow-sm ${
-              view === "list"
-                ? "bg-blue-500 text-white ring-2 ring-blue-300"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            } transition-all`}
-            onClick={() => setView("list")}
-          >
-            List View
-          </button>
-        </div>
-      </header>
-      {view === "matrix" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4 container mx-auto max-w-5xl">
-          {/* Quadrant 1: Important & Urgent */}
-          <div className="bg-red-50 p-4 rounded-xl shadow-md border border-red-100 min-h-[250px] transition-all hover:shadow-lg">
-            <QuadrantHeader
-              title="Do First (Important & Urgent)"
-              color="text-red-700"
-              isImportant={true}
-              isUrgent={true}
-            />
-            {renderQuadrantContent(
-              getQuadrantTasks(true, true),
-              "Add urgent and important tasks here",
-              true,
-              true
-            )}
-          </div>
-          {/* Quadrant 2: Important & Not Urgent */}
-          <div className="bg-blue-50 p-4 rounded-xl shadow-md border border-blue-100 min-h-[250px] transition-all hover:shadow-lg">
-            <QuadrantHeader
-              title="Schedule (Important & Not Urgent)"
-              color="text-blue-700"
-              isImportant={true}
-              isUrgent={false}
-            />
-            {renderQuadrantContent(
-              getQuadrantTasks(true, false),
-              "Add important but non-urgent tasks here",
-              true,
-              false
-            )}
-          </div>
-          {/* Quadrant 3: Not Important & Urgent */}
-          <div className="bg-yellow-50 p-4 rounded-xl shadow-md border border-yellow-100 min-h-[250px] transition-all hover:shadow-lg">
-            <QuadrantHeader
-              title="Delegate (Not Important & Urgent)"
-              color="text-yellow-700"
-              isImportant={false}
-              isUrgent={true}
-            />
-            {renderQuadrantContent(
-              getQuadrantTasks(false, true),
-              "Add urgent but less important tasks here",
-              false,
-              true
-            )}
-          </div>
-          {/* Quadrant 4: Not Important & Not Urgent */}
-          <div className="bg-green-50 p-4 rounded-xl shadow-md border border-green-100 min-h-[250px] transition-all hover:shadow-lg">
-            <QuadrantHeader
-              title="Eliminate (Not Important & Not Urgent)"
-              color="text-green-700"
-              isImportant={false}
-              isUrgent={false}
-            />
-            {renderQuadrantContent(
-              getQuadrantTasks(false, false),
-              "Add low priority tasks here",
-              false,
-              false
-            )}
-          </div>
+      {loading ? ( // Moved loading indicator into render so hooks are always called in the same order.
+        <div className="flex items-center justify-center h-screen">
+          <PulseLoader color="#3b82f6" size={30} />
         </div>
       ) : (
-        <div className="space-y-5 container mx-auto max-w-3xl">
-          {/* ...list view sections similar to matrix... */}
-        </div>
-      )}
+        <>
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
+              Eisenhower Matrix
+            </h1>
+            <p className="text-center text-gray-600 mb-4 text-sm">
+              Organize tasks by importance and urgency{" "}
+              <span className="inline-flex items-center bg-gray-100 px-2 py-1 rounded ml-1 text-xs">
+                <FaKeyboard className="mr-1" size={12} />
+                Ctrl+N to add task
+              </span>
+            </p>
+            <div className="flex justify-center mt-3 space-x-2">
+              <button
+                className={`px-4 py-1.5 rounded-full shadow-sm ${
+                  view === "matrix"
+                    ? "bg-blue-500 text-white ring-2 ring-blue-300"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                } transition-all`}
+                onClick={() => setView("matrix")}
+              >
+                Matrix View
+              </button>
+              <button
+                className={`px-4 py-1.5 rounded-full shadow-sm ${
+                  view === "list"
+                    ? "bg-blue-500 text-white ring-2 ring-blue-300"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                } transition-all`}
+                onClick={() => setView("list")}
+              >
+                List View
+              </button>
+            </div>
+          </header>
+          {view === "matrix" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4 container mx-auto max-w-5xl">
+              {/* Quadrant 1: Important & Urgent */}
+              <div className="bg-red-50 p-4 rounded-xl shadow-md border border-red-100 min-h-[250px] transition-all hover:shadow-lg">
+                <QuadrantHeader
+                  title="Do First (Important & Urgent)"
+                  color="text-red-700"
+                  isImportant={true}
+                  isUrgent={true}
+                />
+                {renderQuadrantContent(
+                  getQuadrantTasks(true, true),
+                  "Add urgent and important tasks here",
+                  true,
+                  true
+                )}
+              </div>
+              {/* Quadrant 2: Important & Not Urgent */}
+              <div className="bg-blue-50 p-4 rounded-xl shadow-md border border-blue-100 min-h-[250px] transition-all hover:shadow-lg">
+                <QuadrantHeader
+                  title="Schedule (Important & Not Urgent)"
+                  color="text-blue-700"
+                  isImportant={true}
+                  isUrgent={false}
+                />
+                {renderQuadrantContent(
+                  getQuadrantTasks(true, false),
+                  "Add important but non-urgent tasks here",
+                  true,
+                  false
+                )}
+              </div>
+              {/* Quadrant 3: Not Important & Urgent */}
+              <div className="bg-yellow-50 p-4 rounded-xl shadow-md border border-yellow-100 min-h-[250px] transition-all hover:shadow-lg">
+                <QuadrantHeader
+                  title="Delegate (Not Important & Urgent)"
+                  color="text-yellow-700"
+                  isImportant={false}
+                  isUrgent={true}
+                />
+                {renderQuadrantContent(
+                  getQuadrantTasks(false, true),
+                  "Add urgent but less important tasks here",
+                  false,
+                  true
+                )}
+              </div>
+              {/* Quadrant 4: Not Important & Not Urgent */}
+              <div className="bg-green-50 p-4 rounded-xl shadow-md border border-green-100 min-h-[250px] transition-all hover:shadow-lg">
+                <QuadrantHeader
+                  title="Eliminate (Not Important & Not Urgent)"
+                  color="text-green-700"
+                  isImportant={false}
+                  isUrgent={false}
+                />
+                {renderQuadrantContent(
+                  getQuadrantTasks(false, false),
+                  "Add low priority tasks here",
+                  false,
+                  false
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-5 container mx-auto max-w-3xl">
+              <div className="bg-red-50 p-4 rounded-xl shadow-md border border-red-100 min-h-[120px] transition-all hover:shadow-lg">
+                <QuadrantHeader
+                  title="Do First (Important & Urgent)"
+                  color="text-red-700"
+                  isImportant={true}
+                  isUrgent={true}
+                />
+                {renderQuadrantContent(
+                  getQuadrantTasks(true, true),
+                  "Add urgent and important tasks here",
+                  true,
+                  true
+                )}
+              </div>
 
-      <button
-        onClick={() => handleShowForm()}
-        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105"
-        aria-label="Add new task"
-        title="Add new task (Ctrl+N)"
-      >
-        <FaPlus size={22} />
-      </button>
+              <div className="bg-blue-50 p-4 rounded-xl shadow-md border border-blue-100 min-h-[120px] transition-all hover:shadow-lg">
+                <QuadrantHeader
+                  title="Schedule (Important & Not Urgent)"
+                  color="text-blue-700"
+                  isImportant={true}
+                  isUrgent={false}
+                />
+                {renderQuadrantContent(
+                  getQuadrantTasks(true, false),
+                  "Add important but non-urgent tasks here",
+                  true,
+                  false
+                )}
+              </div>
 
-      {showForm && (
-        <TaskForm
-          onAdd={addTask}
-          onUpdate={updateTask}
-          editTask={editTask}
-          initialQuadrant={initialQuadrant}
-          onClose={handleCloseForm}
-        />
+              <div className="bg-yellow-50 p-4 rounded-xl shadow-md border border-yellow-100 min-h-[120px] transition-all hover:shadow-lg">
+                <QuadrantHeader
+                  title="Delegate (Not Important & Urgent)"
+                  color="text-yellow-700"
+                  isImportant={false}
+                  isUrgent={true}
+                />
+                {renderQuadrantContent(
+                  getQuadrantTasks(false, true),
+                  "Add urgent but less important tasks here",
+                  false,
+                  true
+                )}
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-xl shadow-md border border-green-100 min-h-[120px] transition-all hover:shadow-lg">
+                <QuadrantHeader
+                  title="Eliminate (Not Important & Not Urgent)"
+                  color="text-green-700"
+                  isImportant={false}
+                  isUrgent={false}
+                />
+                {renderQuadrantContent(
+                  getQuadrantTasks(false, false),
+                  "Add low priority tasks here",
+                  false,
+                  false
+                )}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => handleShowForm()}
+            className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105"
+            aria-label="Add new task"
+            title="Add new task (Ctrl+N)"
+          >
+            <FaPlus size={22} />
+          </button>
+
+          {showForm && (
+            <TaskForm
+              onAdd={addTask}
+              onUpdate={updateTask}
+              editTask={editTask}
+              initialQuadrant={initialQuadrant}
+              onClose={handleCloseForm}
+            />
+          )}
+        </>
       )}
     </div>
   );
