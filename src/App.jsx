@@ -17,6 +17,17 @@ const App = () => {
     localStorage.setItem("eisenhowerTasks", JSON.stringify(tasks));
   }, [tasks]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "n") {
+        e.preventDefault();
+        handleShowForm();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const addTask = (task) => {
     setTasks([...tasks, { ...task, id: Date.now() }]);
     setShowForm(false);
@@ -36,6 +47,7 @@ const App = () => {
 
   // NEW: Function to toggle task completion and persist the change
   const toggleTaskCompletion = (id) => {
+    console.log("Toggling task with id:", id); // Debug log
     setTasks(
       tasks.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task

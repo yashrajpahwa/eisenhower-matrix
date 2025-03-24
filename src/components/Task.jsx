@@ -2,9 +2,9 @@ import React from "react";
 import { FaTrash, FaEdit, FaCheck } from "react-icons/fa";
 
 const Task = ({ task, onDelete, onEdit, onToggle }) => {
-  // NEW: Call parent's onToggle function
   const toggleComplete = (e) => {
     e.stopPropagation();
+    console.log("Task clicked to toggle:", task.id); // Debug log
     onToggle(task.id);
   };
 
