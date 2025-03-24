@@ -1,13 +1,22 @@
 import React from "react";
-import { FaKeyboard } from "react-icons/fa";
+import { FaKeyboard, FaSignOutAlt } from "react-icons/fa";
 import ClipLoader from "react-spinners/ClipLoader";
 import { auth } from "./firebaseConfig";
-import { useAuthState } from "react-firebase-hooks/auth";
-import AppContent from "./AppContent"; // NEW: Moved main logic here
-import SignIn from "./SignIn"; // NEW: SignIn component
+import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
+import AppContent from "./AppContent";
+import SignIn from "./SignIn";
 
 const App = () => {
   const [user, loading, error] = useAuthState(auth);
+  const [signOut, signOutLoading] = useSignOut(auth);
+
+  // Handle sign out with useSignOut hook
+  const handleSignOut = async () => {
+    const success = await signOut();
+    if (success) {
+      console.log("Successfully signed out");
+    }
+  };
 
   if (loading) {
     return (
@@ -20,7 +29,24 @@ const App = () => {
     console.error("Auth error:", error);
   }
 
-  return user ? <AppContent user={user} /> : <SignIn />;
+  return user ? (
+    <div className="relative">
+      {/* Logout Button - Position it in top right corner */}
+      <button
+        onClick={handleSignOut}
+        disabled={signOutLoading}
+        className="absolute top-4 right-4 z-10 flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-sm transition-all hover:shadow"
+        aria-label="Sign out"
+      >
+        <FaSignOutAlt className="text-red-500" />
+        <span className="ml-2 hidden md:inline">Sign Out</span>
+      </button>
+
+      <AppContent user={user} />
+    </div>
+  ) : (
+    <SignIn />
+  );
 };
 
 export default App;
