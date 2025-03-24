@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /tasks/{taskId} {
+      // Allow read only if authenticated and owner
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Allow create only if authenticated, ownership is enforced, and required fields are valid
+      allow create: if request.auth != null &&
+                    request.resource.data.userId == request.auth.uid &&
+                    request.resource.data.title is string &&
+                    request.resource.data.title.size() > 0;
+      
+      // Allow update and delete only if authenticated, owner, and ownership field is unchanged
+      allow update, delete: if request.auth != null &&
+                            resource.data.userId == request.auth.uid &&
+                            (!("userId" in request.resource.data) ||
+                             request.resource.data.userId == resource.data.userId);
+    }
+    
+    // Deny access to any other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
